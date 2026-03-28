@@ -1,0 +1,563 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
+import { Button } from '../components/common/Button';
+import { Card } from '../components/common/Card';
+import { uploadProfileImage } from '../services/users';
+import { compressImage } from '../utils/compressImage';
+import { SKILLS_CATEGORIES, SKILL_CATEGORY_LABELS, AVAILABILITY_OPTIONS, SKILL_LEVEL_OPTIONS } from '../utils/constants';
+import { OnboardingData, Skill } from '../types';
+import { Camera, Check, ChevronRight } from 'lucide-react';
+
+const STEPS = ['Basic Info', 'Location', 'Skills', 'About'];
+
+export const Onboarding: React.FC = () => {
+  const { currentUser, updateUserProfile } = useAuth();
+  const { getUserSkills } = useData();
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [skills, setSkills] = useState<Skill[]>([]);
+
+  const [formData, setFormData] = useState<OnboardingData>({
+    displayName: currentUser?.displayName || '',
+    college: '',
+    area: '',
+    city: '',
+    phoneNumber: '',
+    skillsHave: [],
+    skillsWant: [],
+    skillLevel: 'beginner',
+    availability: 'flexible',
+    bio: '',
+    photoURL: currentUser?.photoURL || ''
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('programming');
+
+  useEffect(() => {
+    const loadSkills = async () => {
+      const userSkills = await getUserSkills();
+      setSkills(userSkills);
+    };
+    loadSkills();
+  }, [getUserSkills]);
+
+  const filteredSkills = skills.filter(
+    skill => skill.category === selectedCategory
+  );
+
+  const updateField = (field: keyof OnboardingData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (step === 0) {
+      if (!formData.college.trim()) {
+        newErrors.college = 'College name is required';
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = 'City is required';
+      }
+      if (!formData.phoneNumber.trim()) {
+        newErrors.phoneNumber = 'Phone number is required';
+      } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
+        newErrors.phoneNumber = 'Invalid phone number format';
+      }
+    }
+
+    if (step === 1) {
+      if (formData.skillsHave.length === 0) {
+        newErrors.skillsHave = 'Select at least one skill you can teach';
+      }
+      if (formData.skillsWant.length === 0) {
+        newErrors.skillsWant = 'Select at least one skill you want to learn';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const compressedFile = await compressImage(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPhotoPreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('Failed to process image:', error);
+    }
+  };
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) return;
+
+    setLoading(true);
+    try {
+      await updateUserProfile({
+        ...formData,
+        // photoURL will be handled separately if photo uploaded
+      });
+      // Redirect to home
+      window.location.href = '/home';
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+      setErrors({ submit: 'Failed to save profile. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSkill = (skillId: string, type: 'have' | 'want') => {
+    const field = type === 'have' ? 'skillsHave' : 'skillsWant';
+    updateField(
+      field,
+      formData[field].includes(skillId)
+        ? formData[field].filter(id => id !== skillId)
+        : [...formData[field], skillId]
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent mb-2">
+              Complete Your Profile
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Let's set up your profile to find the perfect matches
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            {STEPS.map((step, index) => (
+              <React.Fragment key={step}>
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
+                      index < currentStep
+                        ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white'
+                        : index === currentStep
+                        ? 'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 border-2 border-primary-500'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                    }`}
+                  >
+                    {index < currentStep ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <span>{index + 1}</span>
+                    )}
+                  </div>
+                  <span className="text-xs mt-2 text-gray-600 dark:text-gray-400 hidden sm:block">
+                    {step}
+                  </span>
+                </div>
+                {index < STEPS.length - 1 && (
+                  <div
+                    className={`flex-1 h-1 mx-2 rounded ${
+                      index < currentStep
+                        ? 'bg-gradient-to-r from-primary-500 to-accent-500'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Form Card */}
+        <Card className="mb-6" hover={false}>
+          <AnimatePresence mode="wait">
+            {/* Step 0: Basic Info */}
+            {currentStep === 0 && (
+              <motion.div
+                key="step0"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Basic Information
+                </h2>
+
+                {/* Photo Upload */}
+                <div className="flex flex-col items-center mb-6">
+                  <label className="cursor-pointer group">
+                    <div className="relative">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center overflow-hidden shadow-lg">
+                        {photoPreview ? (
+                          <img
+                            src={photoPreview}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Camera className="w-8 h-8 text-white" />
+                        )}
+                      </div>
+                      <div className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md border-2 border-primary-500">
+                        <Camera className="w-4 h-4 text-primary-500" />
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Upload a profile photo
+                  </p>
+                </div>
+
+                {/* College */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    College/University
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.college}
+                    onChange={e => updateField('college', e.target.value)}
+                    placeholder="e.g., MIT, Stanford University"
+                    className="input-field"
+                  />
+                  {errors.college && (
+                    <p className="mt-1 text-sm text-red-500">{errors.college}</p>
+                  )}
+                </div>
+
+                {/* Area */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Area/Locality
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.area}
+                    onChange={e => updateField('area', e.target.value)}
+                    placeholder="e.g., Downtown, Silicon Valley"
+                    className="input-field"
+                  />
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={e => updateField('city', e.target.value)}
+                    placeholder="e.g., San Francisco, New York"
+                    className="input-field"
+                  />
+                  {errors.city && (
+                    <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={e => updateField('phoneNumber', e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    className="input-field"
+                  />
+                  {errors.phoneNumber && (
+                    <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 1: Skills */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Your Skills
+                </h2>
+
+                {/* Skills categories */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Select Category
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {Object.entries(SKILL_CATEGORY_LABELS).map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSelectedCategory(key)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedCategory === key
+                            ? 'bg-primary-500 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Skills I can teach */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Skills I Can Teach
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({formData.skillsHave.length} selected)
+                    </span>
+                  </label>
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    {filteredSkills.map(skill => {
+                      const skillId = skill.id;
+                      const isSelected = formData.skillsHave.includes(skillId);
+                      return (
+                        <button
+                          key={skillId}
+                          type="button"
+                          onClick={() => toggleSkill(skillId, 'have')}
+                          className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                            isSelected
+                              ? 'bg-green-500 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {skill.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.skillsHave && (
+                    <p className="mt-1 text-sm text-red-500">{errors.skillsHave}</p>
+                  )}
+                </div>
+
+                {/* Skills I want to learn */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Skills I Want to Learn
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({formData.skillsWant.length} selected)
+                    </span>
+                  </label>
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    {filteredSkills.map(skill => {
+                      const skillId = skill.id;
+                      const isSelected = formData.skillsWant.includes(skillId);
+                      return (
+                        <button
+                          key={skillId}
+                          type="button"
+                          onClick={() => toggleSkill(skillId, 'want')}
+                          className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                            isSelected
+                              ? 'bg-accent-500 text-white shadow-md'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {skill.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.skillsWant && (
+                    <p className="mt-1 text-sm text-red-500">{errors.skillsWant}</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Preferences */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Preferences
+                </h2>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Skill Level
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {SKILL_LEVEL_OPTIONS.map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => updateField('skillLevel', option.value as any)}
+                        className={`p-3 rounded-xl text-center transition-all ${
+                          formData.skillLevel === option.value
+                            ? 'bg-primary-500 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    This helps us match you appropriately
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Availability
+                  </label>
+                  <div className="space-y-2">
+                    {AVAILABILITY_OPTIONS.map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => updateField('availability', option.value as any)}
+                        className={`w-full p-3 rounded-xl text-left transition-all flex items-center ${
+                          formData.availability === option.value
+                            ? 'bg-primary-100 dark:bg-primary-900 border-2 border-primary-500 text-primary-700 dark:text-primary-300'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-transparent'
+                        }`}
+                      >
+                        {formData.availability === option.value && (
+                          <Check className="w-5 h-5 mr-2" />
+                        )}
+                        <span className="font-medium">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Bio */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Tell Us About Yourself
+                </h2>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Bio
+                  </label>
+                  <textarea
+                    value={formData.bio}
+                    onChange={e => updateField('bio', e.target.value)}
+                    placeholder="Share a bit about yourself, your goals, and what you're looking for in skill exchanges..."
+                    rows={5}
+                    className="input-field resize-none"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {formData.bio.length}/500 characters
+                  </p>
+                </div>
+
+                <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-xl">
+                  <h3 className="font-semibold text-primary-900 dark:text-primary-100 mb-2">
+                    Here's what you've selected:
+                  </h3>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li><span className="font-medium">College:</span> {formData.college}</li>
+                    <li><span className="font-medium">City:</span> {formData.city}</li>
+                    <li><span className="font-medium">Skills to teach:</span> {formData.skillsHave.length} selected</li>
+                    <li><span className="font-medium">Skills to learn:</span> {formData.skillsWant.length} selected</li>
+                    <li><span className="font-medium">Level:</span> {formData.skillLevel}</li>
+                    <li><span className="font-medium">Availability:</span> {formData.availability}</li>
+                  </ul>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            {currentStep > 0 ? (
+              <Button variant="secondary" onClick={prevStep}>
+                Back
+              </Button>
+            ) : (
+              <div></div>
+            )}
+
+            {currentStep < STEPS.length - 1 ? (
+              <Button onClick={nextStep} className="gap-2">
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                loading={loading}
+                className="gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Complete Profile
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Onboarding;
