@@ -105,16 +105,28 @@ export async function getUserRequests(userId: string): Promise<Request[]> {
 
     const [snapshot1, snapshot2] = await Promise.all([getDocs(q), getDocs(q2)]);
 
-    const allRequests = [
-      ...snapshot1.docs.map(doc => ({ id: doc.id, ...doc.data() } as Request)),
-      ...snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() } as Request))
+    const allRequests: Request[] = [
+      ...snapshot1.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+        } as Request;
+      }),
+      ...snapshot2.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+        } as Request;
+      })
     ];
 
-    return allRequests.sort((a, b) => {
-      const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toDate() : new Date(a.createdAt as any);
-      const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toDate() : new Date(b.createdAt as any);
-      return dateB.getTime() - dateA.getTime();
-    });
+    return allRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   } catch (error) {
     console.error('Error getting user requests:', error);
     throw error;
@@ -133,7 +145,15 @@ export async function getIncomingRequests(userId: string): Promise<Request[]> {
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Request));
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+      } as Request;
+    });
   } catch (error) {
     console.error('Error getting incoming requests:', error);
     throw error;
@@ -246,22 +266,31 @@ export async function shareWhatsApp(connectionId: string): Promise<void> {
  */
 export async function getConnectionBetweenUsers(userId1: string, userId2: string): Promise<Connection | null> {
   try {
-    const q = query(
+    // Query for connections where userId1 is either user and userId2 is the other
+    const q1 = query(
       collection(db, CONNECTIONS_COLLECTION),
-      where('userId1', 'in', [userId1, userId2]),
-      where('userId2', 'in', [userId2, userId1])
+      where('userId1', '==', userId1),
+      where('userId2', '==', userId2)
     );
 
-    const snapshot = await getDocs(q);
+    const q2 = query(
+      collection(db, CONNECTIONS_COLLECTION),
+      where('userId1', '==', userId2),
+      where('userId2', '==', userId1)
+    );
 
-    for (const docSnap of snapshot.docs) {
-      const conn = docSnap.data() as Connection;
-      if (
-        (conn.userId1 === userId1 && conn.userId2 === userId2) ||
-        (conn.userId1 === userId2 && conn.userId2 === userId1)
-      ) {
-        return { id: docSnap.id, ...conn };
-      }
+    const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+    // Check first direction
+    if (!snapshot1.empty) {
+      const docSnap = snapshot1.docs[0];
+      return { id: docSnap.id, ...docSnap.data() } as Connection;
+    }
+
+    // Check reverse direction
+    if (!snapshot2.empty) {
+      const docSnap = snapshot2.docs[0];
+      return { id: docSnap.id, ...docSnap.data() } as Connection;
     }
 
     return null;

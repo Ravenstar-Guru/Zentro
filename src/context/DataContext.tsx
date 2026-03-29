@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useCallback } from 'react';
-import { User, Skill, MatchResult, SectionedMatches, UserFilters } from '../types';
+import { User, Skill, MatchResult, SectionedMatches, UserFilters, Request, Connection } from '../types';
 import {
   getUser as fetchUser,
   getAllUsers as fetchAllUsers,
@@ -15,7 +15,7 @@ import {
   shareWhatsApp,
   getUserRequests
 } from '../services/requests';
-import { getSectionsForUser } from '../services/matching';
+import { findMatches as findMatchesService, getSectionsForUser } from '../services/matching';
 
 interface DataContextType {
   // User operations
@@ -32,11 +32,11 @@ interface DataContextType {
   sendRequest: (fromUserId: string, toUserId: string, purpose: string, message: string) => Promise<string>;
   acceptRequest: (requestId: string, acceptorId: string) => Promise<void>;
   rejectRequest: (requestId: string) => Promise<void>;
-  getRequests: (userId: string) => Promise<any[]>;
-  getIncomingRequests: (userId: string) => Promise<any[]>;
+  getRequests: (userId: string) => Promise<Request[]>;
+  getIncomingRequests: (userId: string) => Promise<Request[]>;
 
   // Connection operations
-  getConnections: (userId: string) => Promise<any[]>;
+  getConnections: (userId: string) => Promise<Connection[]>;
   shareWhatsApp: (connectionId: string) => Promise<void>;
 
   // Explore operations
@@ -71,13 +71,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const findMatches = useCallback(async (user: User, limit: number = 50): Promise<MatchResult[]> => {
     const allUsers = await fetchAllUsers();
-    const matches = getSectionsForUser(user, allUsers);
-    return [
-      ...matches.bestMatches,
-      ...matches.sameCollege,
-      ...matches.nearby,
-      ...matches.exploreMore
-    ].slice(0, limit);
+    return findMatchesService(user, allUsers, limit);
   }, []);
 
   // Request operations
@@ -101,16 +95,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await rejectRequest(requestId);
   }, []);
 
-  const getRequests = useCallback(async (userId: string): Promise<any[]> => {
+  const getRequests = useCallback(async (userId: string): Promise<Request[]> => {
     return getUserRequests(userId);
   }, []);
 
-  const getIncomingRequestsOperation = useCallback(async (userId: string): Promise<any[]> => {
+  const getIncomingRequestsOperation = useCallback(async (userId: string): Promise<Request[]> => {
     return getIncomingRequests(userId);
   }, []);
 
   // Connection operations
-  const getConnectionsOperation = useCallback(async (userId: string): Promise<any[]> => {
+  const getConnectionsOperation = useCallback(async (userId: string): Promise<Connection[]> => {
     return getConnections(userId);
   }, []);
 

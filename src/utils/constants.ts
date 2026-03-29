@@ -68,6 +68,13 @@ export const SKILLS_CATEGORIES: Record<string, string[]> = {
 
 export const ALL_SKILLS = Object.values(SKILLS_CATEGORIES).flat();
 
+// Map skill ID (lowercase, hyphenated) to original skill name
+export const SKILL_ID_TO_NAME: Record<string, string> = {};
+ALL_SKILLS.forEach(skill => {
+  const id = skill.toLowerCase().replace(/\s+/g, '-');
+  SKILL_ID_TO_NAME[id] = skill;
+});
+
 export const SKILL_CATEGORY_LABELS: Record<string, string> = {
   programming: 'Programming',
   design: 'Design',

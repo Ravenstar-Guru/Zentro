@@ -33,12 +33,10 @@ export function calculateMatchScore(userA: User, userB: User): number {
   const totalSkillMatches = teachesMatches + learnsMatches;
   score += totalSkillMatches * 20;
 
-  // Normalize to percentage
-  // Max possible: 60 (college) + 40 (area) + 30 (city) + (min(skillsHave.length, skillsWant.length) * 20) * 2
-  const maxSkillMatches = Math.min(
-    userA.skillsHave.length + userB.skillsWant.length,
-    userB.skillsHave.length + userA.skillsWant.length
-  ) / 2;
+  // Calculate maximum possible skill matches
+  // Each user's skillsHave can match with the other's skillsWant
+  const maxSkillMatches = Math.min(userA.skillsHave.length, userB.skillsWant.length) +
+                          Math.min(userB.skillsHave.length, userA.skillsWant.length);
 
   const maxPossible = 130 + maxSkillMatches * 20;
 

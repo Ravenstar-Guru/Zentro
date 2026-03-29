@@ -10,7 +10,7 @@ import { SKILLS_CATEGORIES, SKILL_CATEGORY_LABELS, AVAILABILITY_OPTIONS, SKILL_L
 import { OnboardingData, Skill } from '../types';
 import { Camera, Check, ChevronRight } from 'lucide-react';
 
-const STEPS = ['Basic Info', 'Location', 'Skills', 'About'];
+const STEPS = ['Basic Info', 'Skills', 'Preferences', 'About'];
 
 export const Onboarding: React.FC = () => {
   const { currentUser, updateUserProfile } = useAuth();
@@ -36,6 +36,7 @@ export const Onboarding: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('programming');
 
   useEffect(() => {
@@ -83,6 +84,17 @@ export const Onboarding: React.FC = () => {
       }
     }
 
+    if (step === 2) {
+      if (!formData.skillLevel) {
+        newErrors.skillLevel = 'Select your skill level';
+      }
+      if (!formData.availability) {
+        newErrors.availability = 'Select your availability';
+      }
+    }
+
+    // Step 3 (About) has no required fields
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,6 +105,9 @@ export const Onboarding: React.FC = () => {
 
     try {
       const compressedFile = await compressImage(file);
+      setPhotoFile(compressedFile);
+
+      // Create preview
       const reader = new FileReader();
       reader.onload = (event) => {
         setPhotoPreview(event.target?.result as string);
@@ -100,6 +115,7 @@ export const Onboarding: React.FC = () => {
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       console.error('Failed to process image:', error);
+      setErrors(prev => ({ ...prev, photo: 'Failed to upload image. Please try again.' }));
     }
   };
 
@@ -118,9 +134,22 @@ export const Onboarding: React.FC = () => {
 
     setLoading(true);
     try {
+      // Upload photo if one was selected
+      let photoURL = formData.photoURL;
+      if (photoFile && currentUser) {
+        try {
+          photoURL = await uploadProfileImage(currentUser.uid, photoFile);
+        } catch (uploadError) {
+          console.error('Failed to upload profile image:', uploadError);
+          setErrors({ submit: 'Failed to upload profile image. Please try again.' });
+          setLoading(false);
+          return;
+        }
+      }
+
       await updateUserProfile({
         ...formData,
-        // photoURL will be handled separately if photo uploaded
+        photoURL: photoURL || undefined
       });
       // Redirect to home
       window.location.href = '/home';

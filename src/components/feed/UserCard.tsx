@@ -5,6 +5,7 @@ import { Button } from '../common/Button';
 import { MapPin, Clock, ArrowRight, Bookmark, X } from 'lucide-react';
 import { User } from '../../types';
 import { RequestPopup } from '../requests/RequestPopup';
+import { SKILL_ID_TO_NAME } from '../../utils/constants';
 
 interface UserCardProps {
   user: User & { matchPercentage?: number };
@@ -127,7 +128,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
                 key={skillId}
                 className="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 text-xs rounded-full"
               >
-                {skillId.replace(/-/g, ' ')}
+                {SKILL_ID_TO_NAME[skillId] || skillId.replace(/-/g, ' ')}
               </span>
             ))}
             {remainingHave > 0 && (
@@ -147,7 +148,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
                 key={skillId}
                 className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 text-xs rounded-full"
               >
-                {skillId.replace(/-/g, ' ')}
+                {SKILL_ID_TO_NAME[skillId] || skillId.replace(/-/g, ' ')}
               </span>
             ))}
             {remainingWant > 0 && (
