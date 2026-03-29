@@ -9,10 +9,10 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    // Check local storage or system preference
+    // Check local storage, default to dark for premium futuristic look
     const stored = localStorage.getItem('zentro-theme');
     if (stored === 'dark' || stored === 'light') return stored;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'dark'; // Default to dark theme for premium feel
   });
 
   useEffect(() => {

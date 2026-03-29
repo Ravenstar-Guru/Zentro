@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useMemo, useCallback } from 'react';
-import { User, Skill, MatchResult, SectionedMatches, UserFilters, Request, Connection } from '../types';
+import React, { createContext, useContext, useCallback } from 'react';
+import { User, Skill, MatchResult, SectionedMatches, UserFilters, Request, Connection, ConnectionPurpose } from '../types';
 import {
   getUser as fetchUser,
   getAllUsers as fetchAllUsers,
@@ -29,7 +29,7 @@ interface DataContextType {
   findMatches: (user: User, limit?: number) => Promise<MatchResult[]>;
 
   // Request operations
-  sendRequest: (fromUserId: string, toUserId: string, purpose: string, message: string) => Promise<string>;
+  sendRequest: (fromUserId: string, toUserId: string, purpose: ConnectionPurpose, message: string) => Promise<string>;
   acceptRequest: (requestId: string, acceptorId: string) => Promise<void>;
   rejectRequest: (requestId: string) => Promise<void>;
   getRequests: (userId: string) => Promise<Request[]>;
@@ -78,7 +78,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const sendRequestOperation = useCallback(async (
     fromUserId: string,
     toUserId: string,
-    purpose: string,
+    purpose: ConnectionPurpose,
     message: string
   ): Promise<string> => {
     return sendRequestService(fromUserId, toUserId, purpose, message);

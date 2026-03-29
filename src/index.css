@@ -9,30 +9,55 @@
   }
 
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased bg-space-950 text-space-100;
+  }
+
+  /* Glassmorphism base */
+  .glass {
+    @apply bg-white/10 dark:bg-gray-900/50 backdrop-blur-lg border border-white/20 dark:border-gray-700/50 shadow-lg;
+  }
+
+  .glass-hover {
+    @apply hover:bg-white/15 dark:hover:bg-gray-900/60 hover:shadow-xl hover:scale-[1.02] transition-all duration-300;
+  }
+
+  .glass-strong {
+    @apply bg-white/15 dark:bg-gray-900/60 backdrop-blur-xl border border-white/25 dark:border-gray-700/60 shadow-xl;
   }
 }
 
 /* Custom component styles */
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
+    @apply bg-gradient-to-r from-glow-cyan to-glow-blue text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl hover:shadow-glow-cyan/50 transform hover:scale-105 transition-all duration-200;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200;
+    @apply bg-white/10 dark:bg-gray-800/80 text-space-100 font-medium py-2 px-4 rounded-full border border-white/20 dark:border-gray-600/50 hover:bg-white/20 dark:hover:bg-gray-700/80 backdrop-blur-sm transition-all duration-200;
+  }
+
+  .btn-glow {
+    @apply bg-gradient-to-r from-glow-cyan to-glow-purple text-white font-semibold py-3 px-8 rounded-full shadow-lg shadow-glow-cyan/50 hover:shadow-glow-cyan/70 hover:scale-105 transition-all duration-300 animate-pulse-glow;
   }
 
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 transition-all duration-300;
+    @apply glass rounded-2xl p-4 transition-all duration-300;
   }
 
   .card-hover {
-    @apply hover:shadow-lg hover:scale-[1.02] cursor-pointer;
+    @apply glass-hover cursor-pointer;
+  }
+
+  .card-strong {
+    @apply glass-strong rounded-2xl p-4 transition-all duration-300;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 rounded-xl border border-white/20 dark:border-gray-700/50 bg-white/5 dark:bg-gray-900/50 text-space-100 placeholder-space-500 focus:outline-none focus:ring-2 focus:ring-glow-cyan focus:border-transparent transition-all duration-200 backdrop-blur-sm;
+  }
+
+  .input-glow {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-glow-cyan/50 bg-white/5 dark:bg-gray-900/50 text-space-100 focus:outline-none focus:ring-2 focus:ring-glow-cyan focus:border-glow-cyan shadow-glow-cyan/20 transition-all duration-200 backdrop-blur-sm;
   }
 
   .badge {
@@ -40,19 +65,35 @@
   }
 
   .badge-primary {
-    @apply bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200;
+    @apply bg-primary-500/20 text-primary-300 border border-primary-500/30;
   }
 
   .badge-success {
-    @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200;
+    @apply bg-glow-green/20 text-glow-green border border-glow-green/30;
   }
 
   .badge-warning {
-    @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200;
+    @apply bg-glow-amber/20 text-glow-amber border border-glow-amber/30;
   }
 
   .badge-danger {
-    @apply bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200;
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-glow {
+    @apply bg-gradient-to-r from-glow-cyan/30 to-glow-purple/30 text-glow-cyan border border-glow-cyan/40 backdrop-blur-sm;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200;
+  }
+
+  .nav-link-active {
+    @apply bg-gradient-to-r from-glow-cyan/20 to-glow-purple/20 text-glow-cyan border border-glow-cyan/30 backdrop-blur-md shadow-glow-cyan/20;
+  }
+
+  .nav-link-inactive {
+    @apply text-space-400 hover:text-space-200 hover:bg-white/5 hover:backdrop-blur-sm;
   }
 }
 
@@ -73,11 +114,19 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+    @apply bg-space-800/50 rounded-full;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-400 dark:bg-gray-600 rounded-full hover:bg-gray-500 dark:hover:bg-gray-500;
+    @apply bg-space-600 rounded-full hover:bg-space-500 transition-colors;
+  }
+
+  .scrollbar-glow::-webkit-scrollbar-track {
+    @apply bg-space-900/50 rounded-full;
+  }
+
+  .scrollbar-glow::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-r from-glow-cyan/50 to-glow-purple/50 rounded-full hover:from-glow-cyan hover:to-glow-purple;
   }
 }
 
@@ -86,15 +135,60 @@
   animation: slideUp 0.3s ease-out forwards;
 }
 
-/* Match percentage colors */
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-glow-cyan via-glow-blue to-glow-purple bg-clip-text text-transparent;
+}
+
+.gradient-text-primary {
+  @apply bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent;
+}
+
+/* Glow border */
+.glow-border {
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.3), inset 0 0 15px rgba(6, 182, 212, 0.1);
+}
+
+/* Floating animation for decorative elements */
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse glow for attention elements */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Match percentage colors (enhanced with glow) */
 .match-high {
-  @apply text-green-600 dark:text-green-400;
+  @apply text-glow-green shadow-glow-green/30;
 }
 
 .match-medium {
-  @apply text-yellow-600 dark:text-yellow-400;
+  @apply text-glow-amber shadow-glow-amber/30;
 }
 
 .match-low {
-  @apply text-red-600 dark:text-red-400;
+  @apply text-red-400 shadow-red-500/30;
+}
+
+/* Profile avatar gradient ring */
+.avatar-ring {
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899);
+  padding: 2px;
+  border-radius: 50%;
+}
+
+/* Skill tag colors */
+.skill-teach {
+  @apply bg-primary-500/20 text-primary-300 border border-primary-500/30;
+}
+
+.skill-want {
+  @apply bg-accent-500/20 text-accent-300 border border-accent-500/30;
+}
+
+/* Background gradient */
+.bg-space-gradient {
+  background: radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%);
 }

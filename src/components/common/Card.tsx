@@ -7,6 +7,8 @@ interface CardProps {
   hover?: boolean;
   onClick?: () => void;
   animate?: boolean;
+  glow?: boolean;
+  elevated?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -14,21 +16,31 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   hover = false,
   onClick,
-  animate = false
+  animate = false,
+  glow = false,
+  elevated = false
 }) => {
-  const baseStyles = 'bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 transition-all duration-300';
+  const baseStyles = 'glass rounded-2xl p-4 transition-all duration-300';
 
   const hoverStyles = hover
-    ? 'hover:shadow-lg hover:scale-[1.02] cursor-pointer'
+    ? 'glass-hover cursor-pointer'
+    : '';
+
+  const glowStyles = glow
+    ? 'shadow-glow-cyan/30 hover:shadow-glow-cyan/50'
+    : '';
+
+  const elevatedStyles = elevated
+    ? 'shadow-floating'
     : '';
 
   const Component = onClick ? 'button' : 'div';
 
   const content = (
     <motion.div
-      whileHover={animate ? { scale: 1.02 } : undefined}
+      whileHover={animate || hover ? { scale: 1.02, y: -2 } : undefined}
       whileTap={animate ? { scale: 0.98 } : undefined}
-      className={`${baseStyles} ${hoverStyles} ${className}`}
+      className={`${baseStyles} ${hoverStyles} ${glowStyles} ${elevatedStyles} ${className}`}
       onClick={onClick}
     >
       {children}

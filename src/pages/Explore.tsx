@@ -1,24 +1,15 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useData } from '../context/DataContext';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { UserCard } from '../components/feed/UserCard';
 import { User, UserFilters } from '../types';
-import {
-  Search,
-  Filter,
-  X,
-  GraduationCap,
-  MapPin,
-  Globe,
-  SlidersHorizontal
-} from 'lucide-react';
-// Skills are loaded from constants
 import { ALL_SKILLS } from '../utils/constants';
+import { Search, SlidersHorizontal, X, GraduationCap, MapPin, Globe } from 'lucide-react';
 
 export const Explore: React.FC = () => {
-  const { getAllUsers, filteredUsers } = useData();
+  const { getAllUsers } = useData();
 
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,17 +127,19 @@ export const Explore: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex gap-4 mb-6">
-          <div className="flex-1 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
-          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+          <div className="flex-1 h-12 bg-space-800/50 rounded-2xl animate-pulse"></div>
+          <div className="w-12 h-12 bg-space-800/50 rounded-full animate-pulse"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i} hover={false}>
-              <div className="animate-pulse h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-3"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Card key={i} hover={false} className="h-80">
+              <div className="animate-pulse">
+                <div className="h-48 bg-space-800/50 rounded-2xl mb-3"></div>
+                <div className="h-4 bg-space-800/50 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-space-800/50 rounded w-1/2"></div>
+              </div>
             </Card>
           ))}
         </div>
@@ -157,37 +150,42 @@ export const Explore: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Explore Users
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">
+          Explore the Community
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Discover skilled people around you
+        <p className="text-space-400">
+          Find skilled people who share your interests
         </p>
-      </div>
+      </motion.div>
 
       {/* Search & Filter Bar */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-space-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search by name, college, city, or skill..."
-            className="input-field pl-12"
+            className="input-glow pl-12"
           />
         </div>
         <Button
-          variant={hasActiveFilters ? 'primary' : 'secondary'}
+          size="lg"
+          variant={hasActiveFilters ? 'glow' : 'secondary'}
           onClick={() => setShowFilters(!showFilters)}
-          icon={<SlidersHorizontal className="w-4 h-4" />}
+          icon={<SlidersHorizontal className="w-5 h-5" />}
         >
           {hasActiveFilters ? (
             <span className="relative">
               Filters
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center">
-                !
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-glow-pink rounded-full flex items-center justify-center text-xs text-white animate-pulse">
+                {filters.skills?.length || 1}
               </span>
             </span>
           ) : (
@@ -197,67 +195,70 @@ export const Explore: React.FC = () => {
       </div>
 
       {/* Active Filter Chips */}
-      {hasActiveFilters && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-2"
-        >
-          {searchQuery && (
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-200 rounded-full text-sm">
-              Search: {searchQuery}
-              <button onClick={() => setSearchQuery('')}>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          )}
-          {(filters.skills || []).map(skill =>
-            <span
-              key={skill}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-200 rounded-full text-sm"
-            >
-              {skill}
-              <button onClick={() => toggleSkillFilter(skill)}>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          )}
-          {filters.college && (
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-200 rounded-full text-sm">
-              <GraduationCap className="w-3.5 h-3.5" />
-              {filters.college}
-              <button onClick={() => setFilters(prev => ({ ...prev, college: '' }))}>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          )}
-          {filters.area && (
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 rounded-full text-sm">
-              <MapPin className="w-3.5 h-3.5" />
-              {filters.area}
-              <button onClick={() => setFilters(prev => ({ ...prev, area: '' }))}>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          )}
-          {filters.city && (
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-200 rounded-full text-sm">
-              <Globe className="w-3.5 h-3.5" />
-              {filters.city}
-              <button onClick={() => setFilters(prev => ({ ...prev, city: '' }))}>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          )}
-
-          <button
-            onClick={clearFilters}
-            className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+      <AnimatePresence>
+        {hasActiveFilters && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex flex-wrap gap-2"
           >
-            Clear all
-          </button>
-        </motion.div>
-      )}
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-glow-cyan/20 text-glow-cyan border border-glow-cyan/30 rounded-full text-sm font-medium backdrop-blur-sm">
+                🔍 {searchQuery}
+                <button onClick={() => setSearchQuery('')} className="ml-1 hover:bg-glow-cyan/30 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+            {(filters.skills || []).map(skill =>
+              <span
+                key={skill}
+                className="inline-flex items-center gap-1 px-4 py-2 bg-glow-purple/20 text-glow-purple border border-glow-purple/30 rounded-full text-sm font-medium backdrop-blur-sm"
+              >
+                💡 {skill}
+                <button onClick={() => toggleSkillFilter(skill)} className="ml-1 hover:bg-glow-purple/30 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+            {filters.college && (
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-sm font-medium backdrop-blur-sm">
+                <GraduationCap className="w-3.5 h-3.5" />
+                {filters.college}
+                <button onClick={() => setFilters(prev => ({ ...prev, college: '' }))} className="ml-1 hover:bg-green-500/30 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+            {filters.area && (
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-sm font-medium backdrop-blur-sm">
+                <MapPin className="w-3.5 h-3.5" />
+                {filters.area}
+                <button onClick={() => setFilters(prev => ({ ...prev, area: '' }))} className="ml-1 hover:bg-blue-500/30 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+            {filters.city && (
+              <span className="inline-flex items-center gap-1 px-4 py-2 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full text-sm font-medium backdrop-blur-sm">
+                <Globe className="w-3.5 h-3.5" />
+                {filters.city}
+                <button onClick={() => setFilters(prev => ({ ...prev, city: '' }))} className="ml-1 hover:bg-orange-500/30 rounded-full p-0.5">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-sm text-space-400 hover:text-space-200 underline font-medium"
+            >
+              Clear all
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Filter Panel */}
       <AnimatePresence>
@@ -268,24 +269,25 @@ export const Explore: React.FC = () => {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <Card hover={false} className="mb-6">
-              <div className="space-y-6">
+            <Card hover={false} className="border-glow-cyan/30 bg-space-900/50 backdrop-blur-xl">
+              <div className="space-y-6 p-4">
                 {/* Skills Filter */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                  <label className="block text-sm font-semibold text-space-200 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-glow-cyan"></span>
                     Skills
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto scrollbar-thin">
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 bg-space-900/50 rounded-xl border border-space-800/50">
                     {skills.map(skill => {
                       const isSelected = filters.skills?.includes(skill);
                       return (
                         <button
                           key={skill}
                           onClick={() => toggleSkillFilter(skill)}
-                          className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                             isSelected
-                              ? 'bg-primary-500 text-white'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              ? 'bg-gradient-to-r from-glow-cyan to-glow-purple text-white shadow-lg shadow-glow-cyan/30'
+                              : 'bg-space-800/50 text-space-300 hover:bg-space-700/50 hover:text-space-200'
                           }`}
                         >
                           {skill}
@@ -294,7 +296,8 @@ export const Explore: React.FC = () => {
                     })}
                   </div>
                   {filters.skills && filters.skills.length > 0 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    <p className="text-xs text-space-400 mt-2 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-glow-cyan"></span>
                       {filters.skills.length} skill{filters.skills.length !== 1 ? 's' : ''} selected
                     </p>
                   )}
@@ -303,8 +306,8 @@ export const Explore: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* College Filter */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                      <GraduationCap className="w-4 h-4 inline mr-2" />
+                    <label className="block text-sm font-semibold text-space-200 mb-2 flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4 text-glow-cyan" />
                       College
                     </label>
                     <select
@@ -323,8 +326,8 @@ export const Explore: React.FC = () => {
 
                   {/* Area Filter */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                      <MapPin className="w-4 h-4 inline mr-2" />
+                    <label className="block text-sm font-semibold text-space-200 mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-glow-purple" />
                       Area
                     </label>
                     <select
@@ -343,8 +346,8 @@ export const Explore: React.FC = () => {
 
                   {/* City Filter */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                      <Globe className="w-4 h-4 inline mr-2" />
+                    <label className="block text-sm font-semibold text-space-200 mb-2 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-glow-blue" />
                       City
                     </label>
                     <select
@@ -366,13 +369,13 @@ export const Explore: React.FC = () => {
                   <Button
                     variant="secondary"
                     onClick={clearFilters}
-                    className="flex-1"
+                    className="flex-1 py-3 border border-space-700/50"
                   >
                     Clear Filters
                   </Button>
                   <Button
                     onClick={() => setShowFilters(false)}
-                    className="flex-1"
+                    className="flex-1 py-3 bg-gradient-to-r from-glow-cyan to-glow-purple hover:from-glow-blue hover:to-glow-purple shadow-lg shadow-glow-cyan/30"
                   >
                     Apply & Close
                   </Button>
@@ -386,7 +389,7 @@ export const Explore: React.FC = () => {
       {/* Results */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-space-400">
             {applyFilters.length} user{applyFilters.length !== 1 ? 's' : ''} found
             {hasActiveFilters && ' (filtered)'}
           </p>
@@ -394,13 +397,13 @@ export const Explore: React.FC = () => {
 
         {applyFilters.length === 0 ? (
           <Card hover={false} className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-space-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-space-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-space-200 mb-2">
               No users found
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-space-400 mb-4">
               Try adjusting your search or filters to find more people.
             </p>
             <Button variant="secondary" onClick={clearFilters}>
@@ -408,7 +411,20 @@ export const Explore: React.FC = () => {
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.05
+                }
+              }
+            }}
+          >
             {applyFilters.map((user, index) => (
               <motion.div
                 key={user.uid}
@@ -419,7 +435,7 @@ export const Explore: React.FC = () => {
                 <UserCard user={user} />
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

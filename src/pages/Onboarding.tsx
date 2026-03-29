@@ -22,15 +22,15 @@ export const Onboarding: React.FC = () => {
 
   const [formData, setFormData] = useState<OnboardingData>({
     displayName: currentUser?.displayName || '',
-    college: '',
-    area: '',
-    city: '',
-    phoneNumber: '',
-    skillsHave: [],
-    skillsWant: [],
-    skillLevel: 'beginner',
-    availability: 'flexible',
-    bio: '',
+    college: currentUser?.college || '',
+    area: currentUser?.area || '',
+    city: currentUser?.city || '',
+    phoneNumber: currentUser?.phoneNumber || '',
+    skillsHave: currentUser?.skillsHave || [],
+    skillsWant: currentUser?.skillsWant || [],
+    skillLevel: currentUser?.skillLevel || 'beginner',
+    availability: currentUser?.availability || 'flexible',
+    bio: currentUser?.bio || '',
     photoURL: currentUser?.photoURL || ''
   });
 
@@ -93,8 +93,6 @@ export const Onboarding: React.FC = () => {
       }
     }
 
-    // Step 3 (About) has no required fields
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -151,7 +149,6 @@ export const Onboarding: React.FC = () => {
         ...formData,
         photoURL: photoURL || undefined
       });
-      // Redirect to home
       window.location.href = '/home';
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -172,22 +169,27 @@ export const Onboarding: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-900 dark:to-gray-800 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-space-gradient py-8 px-4 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-glow-cyan/10 rounded-full blur-3xl float-animation"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-glow-purple/10 rounded-full blur-3xl float-animation delay-1000"></div>
+      </div>
+
+      <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent mb-2">
-              Complete Your Profile
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Let's set up your profile to find the perfect matches
-            </p>
-          </motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-3xl font-bold gradient-text mb-2">
+            Complete Your Profile
+          </h1>
+          <p className="text-space-400">
+            Let's set up your profile to find the perfect matches
+          </p>
+        </motion.div>
 
         {/* Progress Steps */}
         <div className="mb-8">
@@ -195,13 +197,16 @@ export const Onboarding: React.FC = () => {
             {STEPS.map((step, index) => (
               <React.Fragment key={step}>
                 <div className="flex flex-col items-center">
-                  <div
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                       index < currentStep
-                        ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white'
+                        ? 'bg-gradient-to-r from-glow-cyan to-glow-purple text-white shadow-glow-cyan/30'
                         : index === currentStep
-                        ? 'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 border-2 border-primary-500'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                        ? 'bg-space-900 border-2 border-glow-cyan text-glow-cyan'
+                        : 'bg-space-800 text-space-500'
                     }`}
                   >
                     {index < currentStep ? (
@@ -209,8 +214,8 @@ export const Onboarding: React.FC = () => {
                     ) : (
                       <span>{index + 1}</span>
                     )}
-                  </div>
-                  <span className="text-xs mt-2 text-gray-600 dark:text-gray-400 hidden sm:block">
+                  </motion.div>
+                  <span className="text-xs mt-2 text-space-400 hidden sm:block">
                     {step}
                   </span>
                 </div>
@@ -218,8 +223,8 @@ export const Onboarding: React.FC = () => {
                   <div
                     className={`flex-1 h-1 mx-2 rounded ${
                       index < currentStep
-                        ? 'bg-gradient-to-r from-primary-500 to-accent-500'
-                        : 'bg-gray-200 dark:bg-gray-700'
+                        ? 'bg-gradient-to-r from-glow-cyan to-glow-purple'
+                        : 'bg-space-800'
                     }`}
                   />
                 )}
@@ -229,7 +234,7 @@ export const Onboarding: React.FC = () => {
         </div>
 
         {/* Form Card */}
-        <Card className="mb-6" hover={false}>
+        <Card className="mb-6 overflow-hidden">
           <AnimatePresence mode="wait">
             {/* Step 0: Basic Info */}
             {currentStep === 0 && (
@@ -238,9 +243,9 @@ export const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="p-6 space-y-6"
               >
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-bold text-space-100 mb-4">
                   Basic Information
                 </h2>
 
@@ -248,7 +253,7 @@ export const Onboarding: React.FC = () => {
                 <div className="flex flex-col items-center mb-6">
                   <label className="cursor-pointer group">
                     <div className="relative">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center overflow-hidden shadow-lg">
+                      <div className="avatar-ring w-24 h-24 rounded-full flex items-center justify-center overflow-hidden">
                         {photoPreview ? (
                           <img
                             src={photoPreview}
@@ -256,11 +261,13 @@ export const Onboarding: React.FC = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Camera className="w-8 h-8 text-white" />
+                          <div className="w-full h-full flex items-center justify-center text-space-100 bg-gradient-to-br from-glow-cyan/30 to-glow-purple/30">
+                            <Camera className="w-8 h-8" />
+                          </div>
                         )}
                       </div>
-                      <div className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-2 shadow-md border-2 border-primary-500">
-                        <Camera className="w-4 h-4 text-primary-500" />
+                      <div className="absolute bottom-0 right-0 bg-space-900 rounded-full p-2 shadow-lg border-2 border-glow-cyan">
+                        <Camera className="w-4 h-4 text-glow-cyan" />
                       </div>
                     </div>
                     <input
@@ -270,14 +277,14 @@ export const Onboarding: React.FC = () => {
                       className="hidden"
                     />
                   </label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <p className="text-sm text-space-400 mt-2">
                     Upload a profile photo
                   </p>
                 </div>
 
                 {/* College */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     College/University
                   </label>
                   <input
@@ -288,13 +295,13 @@ export const Onboarding: React.FC = () => {
                     className="input-field"
                   />
                   {errors.college && (
-                    <p className="mt-1 text-sm text-red-500">{errors.college}</p>
+                    <p className="mt-1 text-sm text-red-400">{errors.college}</p>
                   )}
                 </div>
 
                 {/* Area */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Area/Locality
                   </label>
                   <input
@@ -308,7 +315,7 @@ export const Onboarding: React.FC = () => {
 
                 {/* City */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     City
                   </label>
                   <input
@@ -319,13 +326,13 @@ export const Onboarding: React.FC = () => {
                     className="input-field"
                   />
                   {errors.city && (
-                    <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+                    <p className="mt-1 text-sm text-red-400">{errors.city}</p>
                   )}
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -336,7 +343,7 @@ export const Onboarding: React.FC = () => {
                     className="input-field"
                   />
                   {errors.phoneNumber && (
-                    <p className="mt-1 text-sm text-red-500">{errors.phoneNumber}</p>
+                    <p className="mt-1 text-sm text-red-400">{errors.phoneNumber}</p>
                   )}
                 </div>
               </motion.div>
@@ -349,15 +356,15 @@ export const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="p-6 space-y-6"
               >
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-bold text-space-100 mb-4">
                   Your Skills
                 </h2>
 
                 {/* Skills categories */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  <label className="block text-sm font-medium text-space-300 mb-3">
                     Select Category
                   </label>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -368,8 +375,8 @@ export const Onboarding: React.FC = () => {
                         onClick={() => setSelectedCategory(key)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           selectedCategory === key
-                            ? 'bg-primary-500 text-white shadow-md'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? 'bg-gradient-to-r from-glow-cyan to-glow-purple text-white shadow-glow-cyan/30'
+                            : 'bg-space-800 text-space-300 hover:bg-space-700'
                         }`}
                       >
                         {label}
@@ -380,13 +387,13 @@ export const Onboarding: React.FC = () => {
 
                 {/* Skills I can teach */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Skills I Can Teach
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-space-500">
                       ({formData.skillsHave.length} selected)
                     </span>
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-xl">
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 bg-space-900/50 rounded-xl border border-space-800/50">
                     {filteredSkills.map(skill => {
                       const skillId = skill.id;
                       const isSelected = formData.skillsHave.includes(skillId);
@@ -397,8 +404,8 @@ export const Onboarding: React.FC = () => {
                           onClick={() => toggleSkill(skillId, 'have')}
                           className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                             isSelected
-                              ? 'bg-green-500 text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              ? 'bg-glow-cyan text-white shadow-glow-cyan/30'
+                              : 'bg-space-800 text-space-300 hover:bg-space-700'
                           }`}
                         >
                           {skill.name}
@@ -407,19 +414,19 @@ export const Onboarding: React.FC = () => {
                     })}
                   </div>
                   {errors.skillsHave && (
-                    <p className="mt-1 text-sm text-red-500">{errors.skillsHave}</p>
+                    <p className="mt-1 text-sm text-red-400">{errors.skillsHave}</p>
                   )}
                 </div>
 
                 {/* Skills I want to learn */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Skills I Want to Learn
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-space-500">
                       ({formData.skillsWant.length} selected)
                     </span>
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-xl">
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 bg-space-900/50 rounded-xl border border-space-800/50">
                     {filteredSkills.map(skill => {
                       const skillId = skill.id;
                       const isSelected = formData.skillsWant.includes(skillId);
@@ -430,8 +437,8 @@ export const Onboarding: React.FC = () => {
                           onClick={() => toggleSkill(skillId, 'want')}
                           className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                             isSelected
-                              ? 'bg-accent-500 text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                              ? 'bg-glow-purple text-white shadow-glow-purple/30'
+                              : 'bg-space-800 text-space-300 hover:bg-space-700'
                           }`}
                         >
                           {skill.name}
@@ -440,7 +447,7 @@ export const Onboarding: React.FC = () => {
                     })}
                   </div>
                   {errors.skillsWant && (
-                    <p className="mt-1 text-sm text-red-500">{errors.skillsWant}</p>
+                    <p className="mt-1 text-sm text-red-400">{errors.skillsWant}</p>
                   )}
                 </div>
               </motion.div>
@@ -453,14 +460,14 @@ export const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="p-6 space-y-6"
               >
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-bold text-space-100 mb-4">
                   Preferences
                 </h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Skill Level
                   </label>
                   <div className="grid grid-cols-3 gap-3">
@@ -471,21 +478,21 @@ export const Onboarding: React.FC = () => {
                         onClick={() => updateField('skillLevel', option.value as any)}
                         className={`p-3 rounded-xl text-center transition-all ${
                           formData.skillLevel === option.value
-                            ? 'bg-primary-500 text-white shadow-md'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? 'bg-glow-cyan text-white shadow-glow-cyan/30'
+                            : 'bg-space-800 text-space-300 hover:bg-space-700'
                         }`}
                       >
                         {option.label}
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  <p className="text-xs text-space-500 mt-2">
                     This helps us match you appropriately
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Availability
                   </label>
                   <div className="space-y-2">
@@ -496,8 +503,8 @@ export const Onboarding: React.FC = () => {
                         onClick={() => updateField('availability', option.value as any)}
                         className={`w-full p-3 rounded-xl text-left transition-all flex items-center ${
                           formData.availability === option.value
-                            ? 'bg-primary-100 dark:bg-primary-900 border-2 border-primary-500 text-primary-700 dark:text-primary-300'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-transparent'
+                            ? 'bg-glow-cyan/20 text-glow-cyan border border-glow-cyan/30'
+                            : 'bg-space-800 text-space-300 hover:bg-space-700 border-2 border-transparent'
                         }`}
                       >
                         {formData.availability === option.value && (
@@ -518,14 +525,14 @@ export const Onboarding: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="p-6 space-y-6"
               >
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2 className="text-xl font-bold text-space-100 mb-4">
                   Tell Us About Yourself
                 </h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-space-300 mb-2">
                     Bio
                   </label>
                   <textarea
@@ -535,16 +542,16 @@ export const Onboarding: React.FC = () => {
                     rows={5}
                     className="input-field resize-none"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-space-500 mt-1">
                     {formData.bio.length}/500 characters
                   </p>
                 </div>
 
-                <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-xl">
-                  <h3 className="font-semibold text-primary-900 dark:text-primary-100 mb-2">
+                <div className="bg-glow-cyan/10 p-4 rounded-xl border border-glow-cyan/20">
+                  <h3 className="font-semibold text-glow-cyan mb-2">
                     Here's what you've selected:
                   </h3>
-                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <ul className="space-y-2 text-sm text-space-300">
                     <li><span className="font-medium">College:</span> {formData.college}</li>
                     <li><span className="font-medium">City:</span> {formData.city}</li>
                     <li><span className="font-medium">Skills to teach:</span> {formData.skillsHave.length} selected</li>
@@ -558,7 +565,7 @@ export const Onboarding: React.FC = () => {
           </AnimatePresence>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between mt-8 pt-6 border-t border-space-800/50">
             {currentStep > 0 ? (
               <Button variant="secondary" onClick={prevStep}>
                 Back
@@ -576,7 +583,7 @@ export const Onboarding: React.FC = () => {
               <Button
                 onClick={handleSubmit}
                 loading={loading}
-                className="gap-2"
+                className="gap-2 bg-gradient-to-r from-glow-cyan to-glow-purple hover:from-glow-blue hover:to-glow-purple shadow-lg shadow-glow-cyan/30"
               >
                 <Check className="w-4 h-4" />
                 Complete Profile
@@ -588,5 +595,3 @@ export const Onboarding: React.FC = () => {
     </div>
   );
 };
-
-export default Onboarding;

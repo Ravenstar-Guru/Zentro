@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
@@ -17,8 +16,8 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-space-gradient">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-glow-cyan"></div>
       </div>
     );
   }

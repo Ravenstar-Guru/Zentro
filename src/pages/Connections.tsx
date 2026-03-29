@@ -45,8 +45,6 @@ export const Connections: React.FC = () => {
       await shareWhatsApp(connection.id);
       setMessage({ type: 'success', text: 'WhatsApp contact shared successfully!' });
 
-      // Would typically open WhatsApp here with phone number
-      // For now, we just mark it as shared
       setTimeout(() => {
         setMessage(null);
       }, 3000);
@@ -65,8 +63,6 @@ export const Connections: React.FC = () => {
     }
   };
 
-  // Placeholder for getting user details - in real app, we'd fetch user data
-  // For now, we'll show connection data only
   const placeholderNames = connections.map((_, i) => `Connection ${i + 1}`);
 
   if (loading) {
@@ -75,10 +71,10 @@ export const Connections: React.FC = () => {
         {[1, 2, 3].map(i => (
           <Card key={i} hover={false}>
             <div className="animate-pulse flex items-center gap-4">
-              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div className="w-16 h-16 bg-space-800/50 rounded-full"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-4 bg-space-800/50 rounded w-1/3 mb-2"></div>
+                <div className="h-3 bg-space-800/50 rounded w-1/4"></div>
               </div>
             </div>
           </Card>
@@ -89,24 +85,25 @@ export const Connections: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Connections
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="text-2xl font-bold text-space-100">Connections</h1>
+        <p className="text-space-400 mt-1">
           People you've connected with through Zentro
         </p>
-      </div>
+      </motion.div>
 
       {/* Success/Error Message */}
       {message && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl ${
+          className={`p-4 rounded-xl backdrop-blur-sm ${
             message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
-              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+              ? 'bg-green-500/20 border border-green-500/30 text-green-300'
+              : 'bg-red-500/20 border border-red-500/30 text-red-300'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -122,16 +119,16 @@ export const Connections: React.FC = () => {
 
       {connections.length === 0 ? (
         <Card hover={false} className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-space-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-space-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-space-200 mb-2">
             No connections yet
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-space-400 mb-4">
             Accept connection requests and build your network.
           </p>
-          <Button onClick={() => navigate('/requests')}>
+          <Button onClick={() => navigate('/requests')} variant="glow">
             View Requests
           </Button>
         </Card>
@@ -147,21 +144,21 @@ export const Connections: React.FC = () => {
               <Card hover className="relative">
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-xl">
+                  <div className="avatar-ring w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-xl border-2 border-glow-cyan/50 shadow-glow-cyan/30">
                     {placeholderNames[index]?.charAt(0) || 'U'}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                      <h4 className="font-semibold text-space-200 truncate">
                         {placeholderNames[index]}
                       </h4>
-                      <span className="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
+                      <span className="px-2 py-0.5 text-xs bg-green-500/20 text-green-400 border border-green-500/30 rounded-full">
                         Connected
                       </span>
                     </div>
 
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    <p className="text-sm text-space-400 mb-3">
                       Connected on{' '}
                       {connection.createdAt instanceof Date
                         ? connection.createdAt.toLocaleDateString()
@@ -171,7 +168,7 @@ export const Connections: React.FC = () => {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="primary"
+                        variant="glow"
                         onClick={() => handleShareWhatsApp(connection)}
                         loading={sharingIds.has(connection.id)}
                         disabled={connection.whatsappShared}
@@ -197,20 +194,26 @@ export const Connections: React.FC = () => {
       )}
 
       {/* Info Note */}
-      <Card hover={false} className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800 dark:text-blue-200">
-            <p className="font-medium mb-1">How connections work</p>
-            <ul className="space-y-1 list-disc list-inside text-blue-700 dark:text-blue-300">
-              <li>Accept a request to create a connection</li>
-              <li>Once connected, you can share contact information</li>
-              <li>WhatsApp sharing enables direct messaging</li>
-              <li>All connections are mutual and verified</li>
-            </ul>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card hover={false} className="bg-blue-500/10 border border-blue-500/20">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-300">
+              <p className="font-medium mb-1">How connections work</p>
+              <ul className="space-y-1 list-disc list-inside text-blue-200">
+                <li>Accept a request to create a connection</li>
+                <li>Once connected, you can share contact information</li>
+                <li>WhatsApp sharing enables direct messaging</li>
+                <li>All connections are mutual and verified</li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 };

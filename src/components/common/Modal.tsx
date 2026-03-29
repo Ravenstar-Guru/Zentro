@@ -44,7 +44,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-space-950/80 backdrop-blur-md"
           />
 
           {/* Modal */}
@@ -53,19 +53,19 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto z-10`}
+            className={`relative glass-strong rounded-2xl shadow-floating w-full ${sizes[size]} max-h-[90vh] overflow-y-auto z-10 border-glow-cyan/20`}
           >
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between p-6 border-b border-space-800/50">
+                <h2 className="text-xl font-bold text-space-100">
                   {title}
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="p-2 rounded-full hover:bg-space-800/50 transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-space-400" />
                 </button>
               </div>
             )}
@@ -74,9 +74,9 @@ export const Modal: React.FC<ModalProps> = ({
             {!title && (
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-20"
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-space-800/50 transition-colors z-20"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-space-400" />
               </button>
             )}
 

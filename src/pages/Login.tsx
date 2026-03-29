@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { ZentroLogo } from '../components/layout/ZentroLogo';
+import { Button } from '../components/common/Button';
 
 export const Login: React.FC = () => {
   const { signInWithGoogle, loading } = useAuth();
@@ -31,12 +32,46 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-500 via-accent-500 to-primary-600 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-space-gradient relative overflow-hidden">
+      {/* Animated background particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(15)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full opacity-20"
+            style={{
+              width: Math.random() * 300 + 100,
+              height: Math.random() * 300 + 100,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              background: i % 3 === 0
+                ? 'radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%)'
+                : i % 3 === 1
+                ? 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, transparent 70%)'
+            }}
+            animate={{
+              x: [0, Math.random() * 100 - 50],
+              y: [0, Math.random() * 100 - 50],
+            }}
+            transition={{
+              duration: Math.random() * 20 + 10,
+              repeat: Infinity,
+              repeatType: 'reverse',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Glowing orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-glow-cyan/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-glow-purple/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
+        transition={{ duration: 0.6 }}
+        className="text-center relative z-10 max-w-md w-full px-4"
       >
         {/* Logo */}
         <motion.div
@@ -45,7 +80,10 @@ export const Login: React.FC = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mb-8"
         >
-          <ZentroLogo size={120} imageSrc="/logo.png.jpg" />
+          <div className="relative inline-block">
+            <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-glow-cyan to-glow-purple opacity-50 scale-110"></div>
+            <ZentroLogo size={120} />
+          </div>
         </motion.div>
 
         {/* Tagline */}
@@ -53,7 +91,7 @@ export const Login: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-3xl md:text-4xl font-bold text-white mb-2"
+          className="text-3xl md:text-4xl font-bold text-space-100 mb-3 drop-shadow-glow-cyan"
         >
           Zentro
         </motion.h1>
@@ -62,9 +100,9 @@ export const Login: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="text-lg text-white/90 mb-12"
+          className="text-lg text-space-300 mb-10 max-w-md mx-auto"
         >
-          Learn smarter. Teach better.
+          Connect, learn, and grow together
         </motion.p>
 
         {/* Error Alert */}
@@ -72,7 +110,7 @@ export const Login: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400 max-w-md"
+            className="mb-8 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-sm text-red-300 max-w-md shadow-glow-red/20 backdrop-blur-sm"
           >
             {error}
           </motion.div>
@@ -83,18 +121,20 @@ export const Login: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
+          className="space-y-4"
         >
-          <button
+          <Button
+            variant="glow"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="flex items-center justify-center gap-3 bg-white text-gray-900 font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 text-lg gap-3"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
             ) : (
               <>
                 {/* Google Icon */}
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -112,10 +152,14 @@ export const Login: React.FC = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span>Continue with Google</span>
+                <span className="text-lg">Continue with Google</span>
               </>
             )}
-          </button>
+          </Button>
+
+          <p className="text-xs text-space-500 text-center">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
         </motion.div>
 
         {/* Theme Toggle */}
@@ -124,15 +168,15 @@ export const Login: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.5 }}
           onClick={toggleTheme}
-          className="mt-8 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          className="mt-8 p-3 rounded-full bg-space-900/50 hover:bg-space-800/50 border border-space-700/50 transition-all backdrop-blur-sm"
           aria-label="Toggle dark mode"
         >
           {theme === 'dark' ? (
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-glow-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           ) : (
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-glow-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           )}
@@ -144,7 +188,7 @@ export const Login: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="mt-16 text-white/70 text-sm"
+        className="mt-16 text-space-500 text-sm relative z-10"
       >
         Connect with peers who share your skills
       </motion.p>

@@ -100,33 +100,33 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8"
           >
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-glow-green/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-glow-green/30">
+              <svg className="w-8 h-8 text-glow-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-bold text-space-100 mb-2">
               Request Sent!
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-space-400">
               Your connection request has been sent to {toUserName}
             </p>
           </motion.div>
         ) : (
           <>
             {/* Recipient */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+            <div className="mb-4 p-4 bg-space-900/50 rounded-xl border border-space-800/50">
+              <p className="text-sm text-space-400 mb-1">
                 Connecting with:
               </p>
-              <p className="font-semibold text-gray-900 dark:text-white">
+              <p className="font-semibold text-space-200">
                 {toUserName}
               </p>
             </div>
 
             {/* Purpose Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-space-300 mb-2">
                 Why do you want to connect?
               </label>
               <div className="space-y-2">
@@ -135,28 +135,26 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
                     key={option.value}
                     type="button"
                     onClick={() => setPurpose(option.value as ConnectionPurpose)}
-                    className={`w-full p-3 rounded-xl text-left transition-all ${
+                    className={`w-full p-3 rounded-xl text-left transition-all flex items-center ${
                       purpose === option.value
-                        ? 'bg-primary-100 dark:bg-primary-900/30 border-2 border-primary-500'
-                        : 'bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ? 'bg-glow-cyan/20 text-glow-cyan border-2 border-glow-cyan/30'
+                        : 'bg-space-800/50 text-space-300 hover:bg-space-700/50 border-2 border-transparent'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {purpose === option.value && (
-                        <div className="w-4 h-4 rounded-full bg-primary-500 flex items-center justify-center">
-                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {option.label}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {option.description}
-                        </p>
+                    {purpose === option.value && (
+                      <div className="w-4 h-4 rounded-full bg-glow-cyan flex items-center justify-center flex-shrink-0 mr-2">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
                       </div>
+                    )}
+                    <div>
+                      <p className="font-medium">
+                        {option.label}
+                      </p>
+                      <p className="text-sm text-space-400">
+                        {option.description}
+                      </p>
                     </div>
                   </button>
                 ))}
@@ -164,47 +162,47 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
             </div>
 
             {/* Message */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-space-300 mb-2">
                 Message (optional)
               </label>
               <div className="relative">
-                <MessageSquare className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <MessageSquare className="absolute left-3 top-3 w-5 h-5 text-space-500" />
                 <textarea
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   placeholder="Add a personal note to your request..."
-                  rows={4}
-                  className="pl-10 pr-4 py-3 w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                  rows={3}
+                  className="input-field pl-10 resize-none"
                 />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-space-500 mt-1">
                 A friendly message increases the chance of acceptance
               </p>
             </div>
 
             {/* Error */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
+              <div className="mb-4 p-3 bg-red-500/15 border border-red-500/30 rounded-xl text-sm text-red-300">
                 {error}
               </div>
             )}
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="secondary"
                 onClick={handleClose}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 border-space-700/50"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 loading={loading}
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 bg-gradient-to-r from-glow-cyan to-glow-purple hover:from-glow-blue hover:to-glow-purple shadow-glow-cyan/30"
               >
                 <Send className="w-4 h-4" />
                 Send Request
@@ -216,5 +214,3 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
     </Modal>
   );
 };
-
-export default RequestPopup;
