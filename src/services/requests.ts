@@ -26,6 +26,11 @@ export async function sendRequest(
   message: string
 ): Promise<string> {
   try {
+    // Validate user IDs
+    if (!fromUserId || !toUserId) {
+      throw new Error('Invalid user IDs: both fromUserId and toUserId are required');
+    }
+
     // Check if request already exists
     const existingRequest = await checkExistingRequest(fromUserId, toUserId);
     if (existingRequest) {
@@ -165,20 +170,36 @@ export async function getIncomingRequests(userId: string): Promise<Request[]> {
  */
 export async function acceptRequest(requestId: string, acceptorId: string): Promise<Connection> {
   try {
-    // Update request status
-    const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
-    await updateDoc(requestRef, {
-      status: 'accepted',
-      updatedAt: serverTimestamp()
-    });
+    // Validate acceptorId
+    if (!acceptorId) {
+      throw new Error('Acceptor ID is required');
+    }
 
-    // Get the request to create connection
+    // Get the request first to verify permissions
+    const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
     const requestSnap = await getDoc(requestRef);
+
     if (!requestSnap.exists()) {
       throw new Error('Request not found');
     }
 
     const request = requestSnap.data() as Request;
+
+    // Verify that the acceptor is the intended recipient (toUserId)
+    if (request.toUserId !== acceptorId) {
+      throw new Error('You are not authorized to accept this request');
+    }
+
+    // Check if request is still pending
+    if (request.status !== 'pending') {
+      throw new Error(`This request has already been ${request.status}`);
+    }
+
+    // Update request status
+    await updateDoc(requestRef, {
+      status: 'accepted',
+      updatedAt: serverTimestamp()
+    });
 
     // Create connection
     const connectionData = {
@@ -205,9 +226,31 @@ export async function acceptRequest(requestId: string, acceptorId: string): Prom
 /**
  * Reject a connection request
  */
-export async function rejectRequest(requestId: string): Promise<void> {
+export async function rejectRequest(requestId: string, userId: string): Promise<void> {
   try {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
     const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
+    const requestSnap = await getDoc(requestRef);
+
+    if (!requestSnap.exists()) {
+      throw new Error('Request not found');
+    }
+
+    const request = requestSnap.data() as Request;
+
+    // Verify that the user is the intended recipient (toUserId)
+    if (request.toUserId !== userId) {
+      throw new Error('You are not authorized to reject this request');
+    }
+
+    // Check if request is still pending
+    if (request.status !== 'pending') {
+      throw new Error(`This request has already been ${request.status}`);
+    }
+
     await updateDoc(requestRef, {
       status: 'rejected',
       updatedAt: serverTimestamp()

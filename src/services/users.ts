@@ -59,7 +59,12 @@ export async function getUser(uid: string): Promise<User | null> {
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
-      return userSnap.data() as User;
+      const userData = userSnap.data() as User;
+      // Ensure uid field is present (backfill if missing)
+      if (!userData.uid) {
+        return { ...userData, uid };
+      }
+      return userData;
     }
     return null;
   } catch (error) {
@@ -76,7 +81,14 @@ export async function getAllUsers(): Promise<User[]> {
     const usersRef = collection(db, 'users');
     const usersSnap = await getDocs(usersRef);
 
-    return usersSnap.docs.map(doc => doc.data() as User);
+    return usersSnap.docs.map(doc => {
+      const userData = doc.data() as User;
+      // Ensure uid field is present (backfill if missing)
+      if (!userData.uid) {
+        return { ...userData, uid: doc.id };
+      }
+      return userData;
+    });
   } catch (error) {
     console.error('Error getting all users:', error);
     throw error;

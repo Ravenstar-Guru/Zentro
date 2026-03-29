@@ -87,9 +87,10 @@ export const Requests: React.FC = () => {
   };
 
   const handleReject = async (requestId: string) => {
+    if (!currentUser) return;
     setProcessingIds(prev => new Set(prev).add(requestId));
     try {
-      await rejectRequest(requestId);
+      await rejectRequest(requestId, currentUser.uid);
       await loadRequests();
     } catch (error) {
       console.error('Error rejecting request:', error);

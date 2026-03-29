@@ -31,7 +31,7 @@ interface DataContextType {
   // Request operations
   sendRequest: (fromUserId: string, toUserId: string, purpose: ConnectionPurpose, message: string) => Promise<string>;
   acceptRequest: (requestId: string, acceptorId: string) => Promise<void>;
-  rejectRequest: (requestId: string) => Promise<void>;
+  rejectRequest: (requestId: string, userId: string) => Promise<void>;
   getRequests: (userId: string) => Promise<Request[]>;
   getIncomingRequests: (userId: string) => Promise<Request[]>;
 
@@ -91,8 +91,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await acceptRequestService(requestId, acceptorId);
   }, []);
 
-  const rejectRequestOperation = useCallback(async (requestId: string): Promise<void> => {
-    await rejectRequest(requestId);
+  const rejectRequestOperation = useCallback(async (requestId: string, userId: string): Promise<void> => {
+    await rejectRequest(requestId, userId);
   }, []);
 
   const getRequests = useCallback(async (userId: string): Promise<Request[]> => {
