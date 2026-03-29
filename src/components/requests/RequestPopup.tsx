@@ -42,12 +42,22 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!currentUser) return;
+    if (!currentUser) {
+      setError('You must be logged in to send a request');
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
+      console.log('Sending request:', {
+        fromUserId: currentUser.uid,
+        toUserId,
+        purpose,
+        message: message.trim() || 'Hi! I\'d like to connect with you about your skills.'
+      });
+
       await sendRequest(
         currentUser.uid,
         toUserId,
@@ -55,6 +65,7 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
         message.trim() || `Hi! I'd like to connect with you about your skills.`
       );
 
+      console.log('Request sent successfully');
       setSuccess(true);
       setTimeout(() => {
         onClose();
@@ -70,8 +81,10 @@ export const RequestPopup: React.FC<RequestPopupProps> = ({
       console.error('Failed to send request:', err);
       if (err.message.includes('already exists')) {
         setError('You have already sent a request to this user');
+      } else if (err.message.includes('permission') || err.message.includes('not authorized')) {
+        setError('Permission denied. Please ensure you are logged in.');
       } else {
-        setError('Failed to send request. Please try again.');
+        setError(`Failed to send request: ${err.message}`);
       }
     } finally {
       setLoading(false);

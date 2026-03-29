@@ -95,14 +95,14 @@ export const Profile: React.FC = () => {
   }, [displayUser]);
 
   // Get skill names from IDs
-  const skillsHaveNames = currentUser?.skillsHave
-    ? currentUser.skillsHave.map(id =>
+  const skillsHaveNames = displayUser?.skillsHave
+    ? displayUser.skillsHave.map(id =>
         skills.find(s => s.id === id)?.name || id
       )
     : [];
 
-  const skillsWantNames = currentUser?.skillsWant
-    ? currentUser.skillsWant.map(id =>
+  const skillsWantNames = displayUser?.skillsWant
+    ? displayUser.skillsWant.map(id =>
         skills.find(s => s.id === id)?.name || id
       )
     : [];
@@ -187,14 +187,14 @@ export const Profile: React.FC = () => {
               {/* Profile Picture */}
               <div className="relative">
                 <div className="avatar-ring w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-space-900 shadow-glow-cyan/40 overflow-hidden">
-                  {currentUser.photoURL ? (
+                  {displayUser?.photoURL ? (
                     <img
-                      src={currentUser.photoURL}
-                      alt={currentUser.displayName}
+                      src={displayUser.photoURL}
+                      alt={displayUser.displayName}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    currentUser.displayName?.charAt(0).toUpperCase() || 'U'
+                    displayUser?.displayName?.charAt(0).toUpperCase() || 'U'
                   )}
                 </div>
                 {isEditing && (
@@ -215,18 +215,18 @@ export const Profile: React.FC = () => {
                   />
                 ) : (
                   <h1 className="text-2xl font-bold text-space-100">
-                    {currentUser.displayName}
+                    {displayUser?.displayName}
                   </h1>
                 )}
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2 text-space-400">
                   <div className="flex items-center gap-1">
                     <GraduationCap className="w-4 h-4 text-glow-cyan" />
-                    <span>{currentUser.college || 'No college'}</span>
+                    <span>{displayUser?.college || 'No college'}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4 text-glow-purple" />
-                    <span>{currentUser.area || currentUser.city || 'No location'}</span>
+                    <span>{displayUser?.area || displayUser?.city || 'No location'}</span>
                   </div>
                 </div>
               </div>
@@ -286,7 +286,7 @@ export const Profile: React.FC = () => {
                 />
               ) : (
                 <p className="text-space-300 leading-relaxed">
-                  {currentUser.bio || 'No bio added yet.'}
+                  {displayUser?.bio || 'No bio added yet.'}
                 </p>
               )}
             </div>
@@ -312,13 +312,13 @@ export const Profile: React.FC = () => {
               </Card>
               <Card hover={false} className="text-center">
                 <p className="text-2xl font-bold text-space-200 mb-1 capitalize">
-                  {currentUser.skillLevel}
+                  {displayUser?.skillLevel}
                 </p>
                 <p className="text-xs text-space-400 uppercase tracking-wider">Level</p>
               </Card>
               <Card hover={false} className="text-center">
                 <p className="text-2xl font-bold text-space-200 mb-1 capitalize">
-                  {currentUser.availability.replace('-', ' ')}
+                  {displayUser?.availability?.replace('-', ' ') || ''}
                 </p>
                 <p className="text-xs text-space-400 uppercase tracking-wider">Availability</p>
               </Card>
@@ -463,7 +463,7 @@ export const Profile: React.FC = () => {
               <div>
                 <p className="text-xs text-space-400">Email</p>
                 <p className="text-space-200 font-medium">
-                  {currentUser.email || 'Not provided'}
+                  {displayUser?.email || 'Not provided'}
                 </p>
               </div>
             </div>
@@ -472,7 +472,7 @@ export const Profile: React.FC = () => {
               <div>
                 <p className="text-xs text-space-400">Phone</p>
                 <p className="text-space-200 font-medium">
-                  {currentUser.phoneNumber || 'Not provided'}
+                  {displayUser?.phoneNumber || 'Not provided'}
                 </p>
               </div>
             </div>
@@ -481,7 +481,7 @@ export const Profile: React.FC = () => {
               <div>
                 <p className="text-xs text-space-400">Area</p>
                 <p className="text-space-200 font-medium">
-                  {currentUser.area || 'Not provided'}
+                  {displayUser?.area || 'Not provided'}
                 </p>
               </div>
             </div>
@@ -490,7 +490,7 @@ export const Profile: React.FC = () => {
               <div>
                 <p className="text-xs text-space-400">City</p>
                 <p className="text-space-200 font-medium">
-                  {currentUser.city || 'Not provided'}
+                  {displayUser?.city || 'Not provided'}
                 </p>
               </div>
             </div>

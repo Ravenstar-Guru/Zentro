@@ -26,17 +26,27 @@ export async function sendRequest(
   message: string
 ): Promise<string> {
   try {
+    console.log('sendRequest called with:', { fromUserId, toUserId, purpose, message: message.trim() });
+
     // Validate user IDs
     if (!fromUserId || !toUserId) {
       throw new Error('Invalid user IDs: both fromUserId and toUserId are required');
     }
 
+    // Prevent sending request to self
+    if (fromUserId === toUserId) {
+      throw new Error('Cannot send request to yourself');
+    }
+
     // Check if request already exists
+    console.log('Checking for existing request...');
     const existingRequest = await checkExistingRequest(fromUserId, toUserId);
     if (existingRequest) {
+      console.log('Existing request found:', existingRequest);
       throw new Error('A request already exists between these users');
     }
 
+    console.log('No existing request, creating new request...');
     const requestData = {
       fromUserId,
       toUserId,
@@ -48,6 +58,7 @@ export async function sendRequest(
     };
 
     const docRef = await addDoc(collection(db, REQUESTS_COLLECTION), requestData);
+    console.log('Request created with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error sending request:', error);
@@ -56,36 +67,53 @@ export async function sendRequest(
 }
 
 /**
- * Check if a request already exists between two users
+ * Check if a PENDING request already exists between two users
+ * Only pending requests block new requests; rejected/accepted requests don't
  */
 export async function checkExistingRequest(
   fromUserId: string,
   toUserId: string
 ): Promise<Request | null> {
   try {
+    console.log('checkExistingRequest:', { fromUserId, toUserId });
+
+    // Check forward direction with pending status
     const q = query(
       collection(db, REQUESTS_COLLECTION),
       where('fromUserId', '==', fromUserId),
-      where('toUserId', '==', toUserId)
+      where('toUserId', '==', toUserId),
+      where('status', '==', 'pending')
     );
 
+    console.log('Executing query 1 (forward, pending only)...');
     const snapshot = await getDocs(q);
+    console.log('Query 1 results:', snapshot.size);
+
     if (!snapshot.empty) {
-      return snapshot.docs[0].data() as Request;
+      const data = snapshot.docs[0].data() as Request;
+      console.log('Found pending request from', fromUserId, 'to', toUserId);
+      return data;
     }
 
-    // Check reverse direction
+    // Check reverse direction with pending status
     const q2 = query(
       collection(db, REQUESTS_COLLECTION),
       where('fromUserId', '==', toUserId),
-      where('toUserId', '==', fromUserId)
+      where('toUserId', '==', fromUserId),
+      where('status', '==', 'pending')
     );
 
+    console.log('Executing query 2 (reverse, pending only)...');
     const snapshot2 = await getDocs(q2);
+    console.log('Query 2 results:', snapshot2.size);
+
     if (!snapshot2.empty) {
-      return snapshot2.docs[0].data() as Request;
+      const data = snapshot2.docs[0].data() as Request;
+      console.log('Found pending request from', toUserId, 'to', fromUserId);
+      return data;
     }
 
+    console.log('No existing pending request found');
     return null;
   } catch (error) {
     console.error('Error checking existing request:', error);
@@ -98,6 +126,8 @@ export async function checkExistingRequest(
  */
 export async function getUserRequests(userId: string): Promise<Request[]> {
   try {
+    console.log('getUserRequests for userId:', userId);
+
     const q = query(
       collection(db, REQUESTS_COLLECTION),
       where('toUserId', '==', userId)
@@ -108,7 +138,11 @@ export async function getUserRequests(userId: string): Promise<Request[]> {
       where('fromUserId', '==', userId)
     );
 
+    console.log('Executing parallel queries...');
     const [snapshot1, snapshot2] = await Promise.all([getDocs(q), getDocs(q2)]);
+
+    console.log('Query 1 (toUserId):', snapshot1.size, 'documents');
+    console.log('Query 2 (fromUserId):', snapshot2.size, 'documents');
 
     const allRequests: Request[] = [
       ...snapshot1.docs.map(doc => {
@@ -131,7 +165,10 @@ export async function getUserRequests(userId: string): Promise<Request[]> {
       })
     ];
 
-    return allRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const sorted = allRequests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    console.log('Total requests found:', sorted.length);
+    console.log('Requests:', sorted);
+    return sorted;
   } catch (error) {
     console.error('Error getting user requests:', error);
     throw error;
@@ -143,14 +180,18 @@ export async function getUserRequests(userId: string): Promise<Request[]> {
  */
 export async function getIncomingRequests(userId: string): Promise<Request[]> {
   try {
+    console.log('getIncomingRequests for userId:', userId);
     const q = query(
       collection(db, REQUESTS_COLLECTION),
       where('toUserId', '==', userId),
       where('status', '==', 'pending')
     );
 
+    console.log('Executing incoming requests query...');
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => {
+    console.log('Incoming requests found:', snapshot.size);
+
+    const requests = snapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -159,6 +200,9 @@ export async function getIncomingRequests(userId: string): Promise<Request[]> {
         updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
       } as Request;
     });
+
+    console.log('Parsed incoming requests:', requests);
+    return requests;
   } catch (error) {
     console.error('Error getting incoming requests:', error);
     throw error;
@@ -170,6 +214,8 @@ export async function getIncomingRequests(userId: string): Promise<Request[]> {
  */
 export async function acceptRequest(requestId: string, acceptorId: string): Promise<Connection> {
   try {
+    console.log('acceptRequest called with:', { requestId, acceptorId });
+
     // Validate acceptorId
     if (!acceptorId) {
       throw new Error('Acceptor ID is required');
@@ -177,29 +223,36 @@ export async function acceptRequest(requestId: string, acceptorId: string): Prom
 
     // Get the request first to verify permissions
     const requestRef = doc(db, REQUESTS_COLLECTION, requestId);
+    console.log('Fetching request document...');
     const requestSnap = await getDoc(requestRef);
 
     if (!requestSnap.exists()) {
+      console.log('Request document does not exist');
       throw new Error('Request not found');
     }
 
     const request = requestSnap.data() as Request;
+    console.log('Request data:', request);
 
     // Verify that the acceptor is the intended recipient (toUserId)
     if (request.toUserId !== acceptorId) {
+      console.log('Authorization failed:', { requestToUserId: request.toUserId, acceptorId });
       throw new Error('You are not authorized to accept this request');
     }
 
     // Check if request is still pending
     if (request.status !== 'pending') {
+      console.log('Request status is not pending:', request.status);
       throw new Error(`This request has already been ${request.status}`);
     }
 
     // Update request status
+    console.log('Updating request status to accepted...');
     await updateDoc(requestRef, {
       status: 'accepted',
       updatedAt: serverTimestamp()
     });
+    console.log('Request updated');
 
     // Create connection
     const connectionData = {
@@ -210,7 +263,9 @@ export async function acceptRequest(requestId: string, acceptorId: string): Prom
       createdAt: serverTimestamp()
     };
 
+    console.log('Creating connection...');
     const connRef = await addDoc(collection(db, CONNECTIONS_COLLECTION), connectionData);
+    console.log('Connection created with ID:', connRef.id);
 
     return {
       id: connRef.id,
